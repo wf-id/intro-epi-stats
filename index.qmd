@@ -8,7 +8,13 @@ format:
     footer: "[wakeforestid.com](https://wakeforestid.com)"
     css: ["theme/theme.css"]
     theme: simple
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: true
 ---
+
 
 ##  {#TitleSlide data-menu-title="TitleSlide" background-color="#303436" background-image="assets/snow.jpeg" background-position="left" background-size="contain"}
 
@@ -26,24 +32,220 @@ format:
 [2022-08-09]{style="font-size: 30px;font-weight: bold;"}
 :::
 
-::: footer
-[You are sneaky!]{style="color: transparent;"}
-:::
+```{r}
+#| echo: false
+library(tidyverse)
+library(gtsummary)
+```
 
 ## Statistics is the Science of Data
 
+>The best thing about being a statistician is that you get to play in everyone's backyard.
+> [John Tukey](https://en.wikipedia.org/wiki/John_Tukey)
+
+::::{.columns}
+
+:::{.column width="60%"}
+
+:::{.incremental}
+
 * Statisticians were the first data scientists
-* Statistics gives you a foundation for thinking critically of data
+* At its base, it is the study of data
+* Statistics also provides a foundation for thinking critically of data
 
-## Comparing Things
+:::
 
-The most common question in statistics is "are these two things different"
+:::
+
+::: {.column width="40%"}
+
+![Ronald Fisher, a titan in statistics (but not without his flaws...)](assets/RA-Fisher-smoking-a-pipe-1956.png)
+
+:::
+
+::::
+
+::: {.notes}
+RA Fischer is considered to be the father of modern statistics, but he was not without his faults. He was a eugenicist, likely reflecting his interest as a statistical geneticist. He was very dismissive of Bayesian statistics as well as evidence tying smoking to cancer.
+:::
+
+## Start with the data generating process
+
+::::{.columns}
+
+:::{.column width="50%"}
+**What kind of data are you generating?**
+
+* Number of successes, positive diagnoses out of some number of trials 
+* Measures on a continuous scale (e.g., blood pressure, eGFR, CD4 count) 
+* Un-ordered categorical data (e.g., race/ethnicity) or categories with orders (e.g. Staging of disease) 
+* Calculating time until something happens (e.g., re-admission, next positive culture) 
+
+:::
+
+:::{.column width="50%"}
+**What inference do you want to make?**
+
+* Are the probabilities/ prevalence different?
+* What is the associated risk of X on Y?
+* Are the means between these two groups different?
+* Is the hazard difference between these two groups?
+:::
+
+::::
+
+::: {.notes}
+It all comes down to thinking about what you want to know.
+:::
+
+## Binomial Data
+
+## Successes and Probabilities
+
+In binomial data we are interested in the probability of a outcome in which there can be a success or a failure (often represented by 0 or 1).
+
+::::{.columns}
+
+:::{.column width="40%"}
 
 ```{r}
-#| layout-ncol: 2
-hist(rnorm(100))
-hist(rnorm(100,5))
+r <-rbinom(n = 20, size = 20, prob = 0.05)
+
+r
+
+```
+
+:::
+
+:::{.column width="40%"}
+
+* In 20 trials (attempts), how many successes
+* Randomly generate 10 trials each with a probability of 0.05
+* On any given trial the estimate could be more or less than 5%
+* We call this sampling error (which shrinks as N -> $\infty$)
+
+:::
+
+::::
+
+## Typical Tools to Measure
+
+* If we have the counts and number of trials of two groups we can perform a proportion test:
+
+```{r}
+set.seed(336)
+g1 <- rbinom(n = 1, 50, prob = .20)
+g2 <- rbinom(n = 1, 75, prob = .30)
+cat("Group 1 count: ",g1, " Group 2 count: ", g2,"\n")
+prop.test(c(g1, g2), n = c(50,75))
+
 ```
 
 
-## Bayes vs Freque
+:::{.incremental}
+
+* Note, we did not detect a statistically significant difference, even though we know one exists!
+
+:::
+
+
+:::{.notes}
+
+Reading the readout we can see
+* the estimates for each group
+* We can see the test that we are using
+* We can also see the 95% confidence interval of the difference
+
+:::
+
+## An aside in statistical power
+
+* Power refers to your ability to detect a difference if it is truly there.
+* More formally, it is the probability that a given test correctly rejects the null hypothesis, $H_0$, should one exist.
+* Often this is set at 80%, or $\beta$ of 0.8 and should be considered before your experiment begins.
+
+A fast rule of thumb assuming equal sample sizes and conservative, for a given minimum interesting difference:
+
+$$
+N = \Big({\frac{2.8}{\delta}}\Big)^2
+$$
+
+
+```{r}
+(2.8/.1)^2
+```
+
+
+## Additional notes on power
+
+* Post-hoc power analysis are usually [garbage](https://statmodeling.stat.columbia.edu/2019/01/13/post-hoc-power-calculation-like-shit-sandwich/)
+* Important point is thinking about minimum interesting/relevant different
+* Or more generally, use Bayesian inference
+
+## Back to binomial data
+
+
+* The other way to measure probabilities is through logistic regression!
+* What are the odds increase (or increase in probability) of something (e.g., being male)
+
+
+```{r}
+#| echo: false
+set.seed(1854)
+dat <- data.frame(sex = rep(c("M", "F"), each = 100), latent = rnorm(100))
+dat$prob <- ifelse(arm::invlogit((dat$sex=="M")*.5 + dat$latent)>.5,1,0)
+
+```
+
+```{r}
+f <- glm(prob ~ sex, data = dat, family = binomial())
+tbl_regression(f)
+```
+
+
+* So being a male increasing your probability by a log-odds of 0.84 (or odds of 2.3) or an increasing in probability of .84/4 $\sim$ 20%
+
+## Comparing means
+
+To directly compare means, we can use t-tests.
+
+```{r}
+g1 <- rnorm(30, 5); g2 <- rnorm(30,7)
+t.test(g1,g2)
+
+```
+
+## Comparing means with a linear model
+
+```{r}
+#| echo: false
+dat2 <- data.frame(result = c(g1,g2), group = rep(c("G1", "G2"), each = 30))
+```
+
+Or more generally a linear model:
+
+```{r}
+tbl_regression(lm(result ~ group, data = dat2))
+```
+
+## Thinking about hazards
+
+In time-to-event models we are thinking about rates at which occurrences happen.
+
+We often discuss hazard ratios (e.g., compared to a reference, what is the difference in instantaneous rate of some event occurring)
+
+We typically estimate using proportional hazards models (e.g., Cox models)
+
+
+## What is a P Value
+
+The probability of observing a result equal to or as extreme as the one observed given the null hypothesis is true.
+
+Alternatively, how plausible is the result given the null hypothesis is true.
+
+It is not the probability of there being a difference.
+
+Small p-values may be a reflect of large differences or large sample sizes.
+
+Nothing "trends" towards significance or is almost significant.
+
