@@ -1,0 +1,49 @@
+---
+format: 
+  revealjs:
+    slide-number: true
+    width: 1600
+    height: 900
+    logo: "assets/wfsom-logo.png"
+    footer: "[wakeforestid.com](https://wakeforestid.com)"
+    css: ["theme/theme.css"]
+    theme: simple
+---
+
+##  {#TitleSlide data-menu-title="TitleSlide" background-color="#303436" background-image="assets/snow.jpeg" background-position="left" background-size="contain"}
+
+
+::: {style="position: absolute; left: 480px; top: 200px; height: 525px; width: 1500px; background-color: #8C6D2C; padding: 20px; padding-left: 50px; box-shadow: 15px 15px 0px 0px #a9bcd2; border-radius: 5px;"}
+[Introduction to Statistics and Mathematical Epidemiology]{style="font-size: 60px; font-weight: bold; line-height: 1em; margin: 0px"}
+
+<br>
+
+[Michael DeWitt]{style="font-size: 60px; font-weight: bold;"}
+
+<br>
+[Section on Infectious Diseases]{style="font-size: 40px; font-weight: bold;"}
+
+[2022-08-09]{style="font-size: 30px;font-weight: bold;"}
+:::
+
+::: footer
+[You are sneaky!]{style="color: transparent;"}
+:::
+
+## Statistics is the Science of Data
+
+* Statisticians were the first data scientists
+* Statistics gives you a foundation for thinking critically of data
+
+## Comparing Things
+
+The most common question in statistics is "are these two things different"
+
+```{r}
+#| layout-ncol: 2
+hist(rnorm(100))
+hist(rnorm(100,5))
+```
+
+
+## Bayes vs Freque
